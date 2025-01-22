@@ -10,9 +10,18 @@ app.use(cors());
 const orders =  [];
 
 app.post("/neworder", bodyParser.json(), (req, res) => {
-    console.log(req.body);
+    orders.push(req.body);
+    console.log("Все заявки:");
+    console.log(orders);
     res.send("ok");
 })
+
+app.post("/getallorders", bodyParser.json(), (req, res) => {
+    console.log("getAllOrders:");
+    console.log(orders);
+    res.send(orders);
+})
+
 
 console.log("SERVER STARTED");
 app.listen(PORT);
