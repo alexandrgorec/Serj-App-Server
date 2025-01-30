@@ -1,0 +1,5 @@
+CREATE TABLE ORDERS(
+    id BIGSERIAL PRIMARY KEY,
+    orderjson JSON NOT NULL,
+    orderdate TIMESTAMP NOT NULL
+);
