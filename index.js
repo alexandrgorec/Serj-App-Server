@@ -24,10 +24,10 @@ app.use(session({
 }));
 
 
-app.use((req, res, next) => {
-    req.session.auth = true;
-    next();
-})
+// app.use((req, res, next) => {
+//     req.session.auth = false;
+//     next();
+// })
 
 app.get('/', (req, res) => {
     if (req.session.auth == false) {
