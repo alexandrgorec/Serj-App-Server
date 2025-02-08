@@ -15,6 +15,11 @@ app.use(cors());
 app.use(cookieParser(process.env.SECRET_COOKIE));
 
 
+const SUPPLIERS = ['РНК', "Барс", "Грасс", "Юма"];
+const BUYERS = ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"];
+const DRIVERS = ['Василий Иванович', "Григорий", "Димооооон", "Анатолий Степанович"];
+const TYPE_OF_PRODUCT = ['ДТ-Е-К5', "Дизель", "Не дизель", "GT-POWER"];
+const MANAGERS = ['Антон', "Сержан", "ЦАРЬ", "Иванов"];
 
 
 app.post('/auth', bodyParser.json(), (req, res) => {
@@ -52,6 +57,16 @@ app.post("/getallorders", bodyParser.json(), (req, res) => {
     });
 })
 
+app.post("/getListsData", bodyParser.json(), (req, res) => {
+    console.log("getListsData");
+    res.send({
+         SUPPLIERS : ['РНК', "Барс", "Грасс", "Юма"],
+         BUYERS : ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"],
+         DRIVERS : ['Василий Иванович', "Григорий", "Димооооон", "Анатолий Степанович"],
+         TYPE_OF_PRODUCT : ['ДТ-Е-К5', "Дизель", "Не дизель", "GT-POWER"],
+         MANAGERS : ['Антон', "Сержан", "ЦАРЬ", "Иванов"],
+    })
+})
 
 
 
