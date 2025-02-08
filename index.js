@@ -74,26 +74,3 @@ app.post("/getListsData", bodyParser.json(), (req, res) => {
 
 console.log(`SERVER STARTED ON PORT:${PORT}`);
 app.listen(PORT);
-
-
-
-// app.use(session({
-//     secret: process.env.SECRET_COOKIE,
-//     resave: true,
-//     saveUninitialized: true,
-//     cookie: {
-//         maxAge: 1000 * 3600 * 24 * 10,
-//         httpOnly: true,
-//     }
-// }));
-
-// app.use((req, res, next) => {
-//     req.session.auth =  req.session.auth || false;
-//     next();
-// })
-
-// app.get('/meeting', (req,res) => {
-//     console.log("OPA");
-//     console.log("Сессия:",req.session.auth);
-//     res.send("1111");
-// })
