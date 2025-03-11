@@ -45,26 +45,42 @@ app.post("/neworder", bodyParser.json(), (req, res) => {
 })
 
 app.post("/getallorders", bodyParser.json(), (req, res) => {
-    pool.query("select * from orders", (err, result) => {
+    pool.query("select * from orders ORDER BY id", (err, result) => {
         if (err) {
             console.error('Error connecting to the database', err.stack);
             res.send('ошибка доступа к базе данных');
         } else {
             console.log('Connected to the database: get allOrders');
             res.status(202);
+            console.log(result.rows)
             res.json(result.rows);
         }
     });
 })
 
+app.post("/editorder", bodyParser.json(), (req, res) => {
+    const id = req.body.id;
+    delete req.body.id;
+    pool.query("UPDATE orders SET orderjson = $1 where id = $2", [req.body, id], (err, result) => {
+        if (err) {
+            console.error('Error connecting to the database', err.stack);
+            res.send('ошибка доступа к базе данных');
+        } else {
+            console.log('EDIT ORDER');
+            res.sendStatus(202);
+        }
+    });
+
+})
+
 app.post("/getListsData", bodyParser.json(), (req, res) => {
     console.log("getListsData");
     res.send({
-         SUPPLIERS : ['РНК', "Барс", "Грасс", "Юма"],
-         BUYERS : ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"],
-         DRIVERS : ['Василий Иванович', "Григорий", "Димооооон", "Анатолий Степанович"],
-         TYPE_OF_PRODUCT : ['ДТ-Е-К5', "Дизель", "Не дизель", "GT-POWER"],
-         MANAGERS : ['Антон', "Сержан", "ЦАРЬ", "Иванов"],
+        SUPPLIERS: ['РНК', "Барс", "Грасс", "Юма"],
+        BUYERS: ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"],
+        DRIVERS: ['Василий Иванович', "Григорий", "Димооооон", "Анатолий Степанович"],
+        TYPE_OF_PRODUCT: ['ДТ-Е-К5', "Дизель", "Не дизель", "GT-POWER"],
+        MANAGERS: ['Антон', "Сержан", "ЦАРЬ", "Иванов"],
     })
 })
 
