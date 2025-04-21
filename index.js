@@ -59,7 +59,7 @@ app.post('/getAccessToken', (req, res) => {
                     res.status(202);
                     const payload = {
                         user: {
-                            name : user?.userinfo?.name || '',
+                            name: user?.userinfo?.name || '',
                             rights: user.rights,
                         },
                     }
@@ -129,14 +129,24 @@ app.post("/getData", (req, res) => {
 app.post("/neworder", (req, res) => {
     const order = req.body.order;
     const now = new Date();
-    const insertText = 'INSERT INTO orders(orderjson, orderdate) VALUES ($1, $2)'
-    pool.query(insertText, [order, now]);
-    res.send('заявка создана');
+    const insertText = 'INSERT INTO orders(orderjson, orderdate) VALUES ($1, $2) RETURNING id';
+    const result = pool.query(insertText, [order, now], (err, result) => {
+        if (err) {
+            res.sendStatus(400);
+        }
+        else {
+            res.status(202);
+            res.send(result.rows[0].id);
+        }
+
+
+    });
+
 })
 
 
 app.post("/getallorders", (req, res) => {
-    pool.query("select * from orders ORDER BY id", (err, result) => {
+    pool.query("select * from orders ORDER BY id DESC", (err, result) => {
         if (err) {
             console.error('Error connecting to the database', err.stack);
             res.send('ошибка доступа к базе данных');
@@ -147,9 +157,18 @@ app.post("/getallorders", (req, res) => {
             res.json(answer);
         }
     });
+})
 
-
-
+app.post("/deleteorder", (req, res) => {
+    const id = req.body.id;
+    pool.query("delete from orders where id = $1", [id], (err, result) => {
+        if (err) {
+            console.error('Error delete order', err.stack);
+            res.send('ошибка доступа к базе данных');
+        } else {
+            res.sendStatus(202);
+        }
+    });
 })
 
 app.post("/editorder", bodyParser.json(), (req, res) => {
@@ -160,6 +179,7 @@ app.post("/editorder", bodyParser.json(), (req, res) => {
             res.send('ошибка доступа к базе данных');
         } else {
             console.log('EDIT ORDER');
+           
             res.sendStatus(202);
         }
     });
