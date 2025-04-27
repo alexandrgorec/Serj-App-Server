@@ -22,31 +22,62 @@ const checkAuth = (req, res, next) => {
             res.sendStatus(999);
         }
         else {
+            // console.log("req.body:", req.body)
             req.body.rights = result.user.rights;
             req.body.user = result?.user?.name || '';
+            req.body.selectListsData = req.body.selectListsData || result?.user?.selectListsData || {
+                SUPPLIERS: [],
+                BUYERS: [],
+                DRIVERS: [],
+                TYPE_OF_PRODUCT: [],
+                MANAGERS: [],
+                user: {},
+            };
+            req.body.userId = result?.user?.userId;
             next();
         }
     });
 }
 
 
-const SUPPLIERS = ['РНК', "Барс", "Грасс", "Юма"];
-const BUYERS = ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"];
-const DRIVERS = ['Василий Иванович', "Григорий", "Димооооон", "Анатолий Степанович"];
-const TYPE_OF_PRODUCT = ['ДТ-Е-К5', "Дизель", "Не дизель", "GT-POWER"];
-const MANAGERS = ['Антон', "Сержан", "ЦАРЬ", "Иванов"];
+app.get("/test", (req, res) => {
+
+    pool.query("select userinfo from users where id = $1", [1], (err, result) => {
+        if (err) {
+            console.error('Error connecting to the database', err.stack);
+            res.send('ошибка доступа к базе данных');
+        } else {
+            const userInfo = result.rows[0];
+            console.log(userInfo);
+            res.send(userInfo.userinfo);
+        }
+    });
 
 
+    //  pool.query("UPDATE users SET userinfo = $1 where id = $2", [{name:"Менеджер Валера"}, 1], (err, result) => {
+    //                 if (err) {
+    //                     console.error('Error connecting to the database', err.stack);
+    //                     res.send('ошибка доступа к базе данных');
+    //                 } else {
+    //                     console.log('EDIT userSelectListsData');
 
-// app.get("/test", (req, res) => {
-//     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaW5CbG9ja0FjY2VzcyI6dHJ1ZSwiaWF0IjoxNzQyMjk4NTQ3fQ.cqzFXD01hJurFsTdRkD1fThymjXKtPoBBukqZRUODRI"
-//     const verify = jwt.verify(token, process.env.SECRET_KEY);
-//     res.send(verify);
+    //                     res.sendStatus(202);
+    //                 }
+    //             });
 
-// })
+
+})
 
 
 app.post('/getAccessToken', (req, res) => {
+    const selectListsData = {
+        SUPPLIERS: ['РНК', "Барс", "Грасс", "Юма"],
+        BUYERS: ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"],
+        DRIVERS: ['Василий Иванович', "Григорий", "Валера", "Анатолий Степанович"],
+        TYPE_OF_PRODUCT: ['ДТ-Е-К5', "Дизель", "АИ-95", "GT-POWER"],
+        MANAGERS: ['Антон', "Сержан", "Семён", "Иванов"],
+    }
+
     const sql = 'select * from users where login = $1';
     pool.query(sql, [req.body.u], (err, result) => {
         if (err) {
@@ -61,6 +92,8 @@ app.post('/getAccessToken', (req, res) => {
                         user: {
                             name: user?.userinfo?.name || '',
                             rights: user.rights,
+                            selectListsData: user?.userinfo?.selectListsData || selectListsData,
+                            userId: user.id,
                         },
                     }
                     const token = jwt.sign(payload, process.env.SECRET_KEY, {
@@ -109,19 +142,13 @@ app.use(checkAuth);
 
 app.post("/getData", (req, res) => {
     res.status(202);
-    const selectListsData = {
-        SUPPLIERS: ['РНК', "Барс", "Грасс", "Юма"],
-        BUYERS: ['Техресурс', "Слава", "Мостпроект", "тройка-тт", "Тайга", "Сеч", "Горбунов"],
-        DRIVERS: ['Василий Иванович', "Григорий", "Валера", "Анатолий Степанович"],
-        TYPE_OF_PRODUCT: ['ДТ-Е-К5', "Дизель", "АИ-95", "GT-POWER"],
-        MANAGERS: ['Антон', "Сержан", "Семён", "Иванов"],
-    }
     const user = {
         name: req.body.user,
         rights: req.body.rights,
+        selectListsData: req.body.selectListsData,
+        userId: req.body.userId,
     }
     res.send({
-        selectListsData,
         user,
     })
 })
@@ -179,10 +206,42 @@ app.post("/editorder", bodyParser.json(), (req, res) => {
             res.send('ошибка доступа к базе данных');
         } else {
             console.log('EDIT ORDER');
-           
+
             res.sendStatus(202);
         }
     });
+
+})
+
+app.post("/editSelectListsData", bodyParser.json(), (req, res) => {
+    const selectListsData = req.body.selectListsData;
+    // console.log("selectListsData.suppliers", selectListsData.SUPPLIERS)
+    const userId = req.body.userId;
+    pool.query("select userinfo from users where id = $1", [userId], (err, result) => {
+        if (err) {
+            console.error('Error connecting to the database', err.stack);
+            res.send('ошибка доступа к базе данных');
+        } else {
+
+            const userInfo = result.rows[0].userinfo;
+            userInfo.selectListsData = selectListsData;
+            // console.log("userInfo:", userInfo);
+            // res.sendStatus(202);
+            pool.query("UPDATE users SET userinfo = $1 where id = $2", [userInfo, userId], (err, result) => {
+                if (err) {
+                    console.error('Error connecting to the database', err.stack);
+                    res.send('ошибка доступа к базе данных');
+                } else {
+                    // console.log('EDIT userSelectListsData');
+
+                    res.sendStatus(202);
+                }
+            });
+        }
+    });
+
+
+
 
 })
 
