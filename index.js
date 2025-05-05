@@ -42,14 +42,13 @@ const checkAuth = (req, res, next) => {
 
 app.get("/test", (req, res) => {
 
-    pool.query("select userinfo from users where id = $1", [1], (err, result) => {
+    pool.query("select orderjson from orders where id = $1", [1], (err, result) => {
         if (err) {
             console.error('Error connecting to the database', err.stack);
             res.send('ошибка доступа к базе данных');
         } else {
-            const userInfo = result.rows[0];
-            console.log(userInfo);
-            res.send(userInfo.userinfo);
+            const result1 = result.rows[0];
+            res.send(result1.orderjson);
         }
     });
 
