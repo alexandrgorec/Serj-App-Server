@@ -20,9 +20,6 @@ app.use("/*", (req, res, next) => {
     next();
 })
 
-const hash = bcrypt.hashSync("password", 10);
-console.log(hash)
-
 app.get("/test", (req, res) => {
 
         pool.query("select * from users ", (err, result) => {
