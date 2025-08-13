@@ -5,8 +5,9 @@ const bcrypt = require('bcrypt');
 class UserController {
     async editSelectListsData(req, res) {
         const selectListsData = req.body.selectListsData;
-        // console.log("selectListsData.suppliers", selectListsData.SUPPLIERS)
+        // console.log("selectListsData.SUPPLIERS", selectListsData.SUPPLIERS);
         const userId = req.body.userId;
+        // console.log("userId", userId)
         pool.query("select userinfo from users where id = $1", [userId], (err, result) => {
             if (err) {
                 console.error('Error connecting to the database', err.stack);
@@ -15,7 +16,7 @@ class UserController {
 
                 const userInfo = result.rows[0].userinfo;
                 userInfo.selectListsData = selectListsData;
-                // console.log("userInfo:", userInfo);
+                console.log("userInfo:", userInfo);
                 // res.sendStatus(202);
                 pool.query("UPDATE users SET userinfo = $1 where id = $2", [userInfo, userId], (err, result) => {
                     if (err) {
@@ -51,7 +52,6 @@ class UserController {
                             finBlockAccess: true,
                             adminAccess: true,
                         },
-                        selectListsData: selectListsData,
                         userId: 'root',
                     },
                 }
@@ -79,7 +79,6 @@ class UserController {
                                 user: {
                                     name: user?.userinfo?.name || '',
                                     rights: user.rights,
-                                    selectListsData: user?.userinfo?.selectListsData || selectListsData,
                                     userId: user.id,
                                 },
                             }
@@ -101,14 +100,20 @@ class UserController {
     }
     async getData(req, res) {
         res.status(202);
+        console.log("GET DATA")
         const user = {
             name: req.body.user,
             rights: req.body.rights,
-            selectListsData: req.body.selectListsData,
             userId: req.body.userId,
         }
-        res.send({
-            user,
+        pool.query("select userinfo from users where Id=$1",[req.body.userId], (err, result) => {
+            if (err){
+                console.log(err);
+                res.send({user});
+            } else {
+                user.selectListsData = result.rows[0].userinfo.selectListsData;
+                res.send({user});
+            }
         })
     }
     async checkAuth(req, res, next) {
@@ -120,14 +125,6 @@ class UserController {
                 // console.log("req.body:", req.body)
                 req.body.rights = result.user.rights;
                 req.body.user = result?.user?.name || '';
-                req.body.selectListsData = req.body.selectListsData || result?.user?.selectListsData || {
-                    SUPPLIERS: [],
-                    BUYERS: [],
-                    DRIVERS: [],
-                    TYPE_OF_PRODUCT: [],
-                    MANAGERS: [],
-                    user: {},
-                };
                 req.body.userId = result?.user?.userId;
                 next();
             }
